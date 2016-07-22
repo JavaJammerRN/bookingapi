@@ -96,7 +96,7 @@ public class BookingDAO {
 
 
 
-static Connection establishConnection(){
+private static Connection establishConnection(){
 	Connection conn = null;
 	try {
 		// The newInstance() call is a work around for some broken Java implementations
