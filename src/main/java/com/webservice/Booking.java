@@ -124,7 +124,7 @@ public class Booking {
 		return s;
 	}
 	
-	public Booking cloneBooking(Booking b){
+	public static Booking cloneBooking(Booking b){
 		Booking obj=new Booking();
 		obj.setBookingID(b.getBookingID());
 		obj.setUserIDFK(b.getUserID());
