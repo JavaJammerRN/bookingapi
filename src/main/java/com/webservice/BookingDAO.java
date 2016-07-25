@@ -56,6 +56,7 @@ public class BookingDAO {
 	/*
 	 * This methods retrieves all the bookings linked to a specific userID.
 	 * Future Developments: Retrieve only the bookings within a date range to limit the amount of data to elaborate
+	 * 
 	 */
 	public static List<Booking> getAllBookingsForSpecificUser(int userId){
 		//Validate the userId
@@ -97,6 +98,10 @@ public class BookingDAO {
 		return null;
 	}
 	
+	/*
+	 * This method retrieves a specific booking provided a user id and a booking id
+	 * 
+	 */
 	public static Booking getSingleBookingForSpecificUser(int userId, int bookingId){
 		//Validate the data
 		if(userId<1 && bookingId<0)
@@ -124,8 +129,6 @@ public class BookingDAO {
 					
 					//Loop around the resultset to extract the data needed for each booking
 					while(rs.next()){
-						//int bookingId=(Integer.parseInt(rs.getString("bookingID")));
-						//int userId=(Integer.parseInt(rs.getString("userID_FK")));
 						int deskId=(Integer.parseInt(rs.getString("deskID_FK")));
 						int deskBlockN=(Integer.parseInt(rs.getString("deskBlock")));
 						String deskLetter=rs.getString("deskLetter");
@@ -185,8 +188,34 @@ public class BookingDAO {
 		return null;
 	}
 
+	/*
+	 * This method returns all the available seats provided a location, a start date and an end date
+	 * The results are stored into a List of Integers, since each seat is identified with an unique number
+	 * 
+	 */
+	public static List<Integer> getAvailableSeatLocation(String location, String startD, String endD){
+		if(!location.equals("")){
+			
+		}
+		return null;
+	}
+	
+	/*
+	 * This method is used to calculate how many days the booking is for
+	 * 
+	 */
+	private int getBookingLength(String startDate, String endDate){
+		int counter=0;
+		//Convert the given strings into Date object
+		
+		return counter;
+	}
 
-
+	/*
+	 * This method provides to establish a connection with the MySQL Database.
+	 * Once the connection has been established, a reference object is returned so that the other parts of the application can
+	 * use it to retrieve/create/modify data
+	 */
 	static Connection establishConnection(){
 		Connection conn = null;
 		try {

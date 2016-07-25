@@ -29,6 +29,16 @@ public class BookingController {
 		}
 	}
 	
-	//public 
+	@RequestMapping(value="/booking/user/{userID}/ref/{bookingID}", method=RequestMethod.GET)
+	public Booking userSpecificBooking(@PathVariable("userID") String userID, @PathVariable("bookingID") String bookingID){
+		try{
+			int userIdentification=Integer.parseInt(userID);
+			int bookingIdentification=Integer.parseInt(bookingID);
+			return BookingDAO.getSingleBookingForSpecificUser(userIdentification, bookingIdentification);
+		}
+		catch(Exception e){
+			return null;
+		}
+	}
 
 }
