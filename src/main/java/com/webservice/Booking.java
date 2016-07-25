@@ -123,5 +123,18 @@ public class Booking {
 		s+="BookingID: "+this.getBookingID()+"\nUserID: "+this.getUserID()+"\nDeskID: "+this.getDeskID()+"\nStartDate: "+this.getStartDate()+"\nEndDate: "+this.getEndDate()+"\nDeskBlock: "+this.getDeskBlock()+"\nDeskLetter: "+this.getDeskLetter()+"\nLocation: "+this.getLocation()+"\n---------------------------------";
 		return s;
 	}
+	
+	public Booking cloneBooking(Booking b){
+		Booking obj=new Booking();
+		obj.setBookingID(b.getBookingID());
+		obj.setUserIDFK(b.getUserID());
+		obj.setDeskID(b.getDeskID());
+		obj.setStartDate(b.getStartDate().toString());
+		obj.setEndDate(b.getEndDate().toString());
+		obj.setDeskBlock(b.getDeskBlock());
+		obj.setDeskLetter(b.getDeskLetter());
+		obj.setLocation(b.getLocation());
+		return obj;
+	}
 
 }
