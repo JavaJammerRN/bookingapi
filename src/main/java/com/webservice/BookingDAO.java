@@ -199,7 +199,7 @@ public class BookingDAO {
 	 * The results are stored into a List of Integers, since each seat is identified with an unique number
 	 * 
 	 */
-	public static List<List<Integer>> getAvailableSeatLocation(String location, String startD, String endD){
+	public static List<List<Integer>> getAvailableSeatsLocation(String location, String startD, String endD){
 		if(!location.equals("")){
 			//Convert the given strings into Date object
 			SimpleDateFormat dateFormatter=new SimpleDateFormat("yyyy-MM-dd");
@@ -214,23 +214,85 @@ public class BookingDAO {
 				//Each location in the outer part of the array indicate the day
 				//Each location in the inner array contains a list of available seats
 				List<List<Integer>> availableSeats=new ArrayList<List<Integer>>();
-				//Vector<Vector<Integer>> seats=new Vector<Vector<Integer>>();
+
+				//Retrieve a list of all the seats for the given location
+				List<Integer> allSeatsLocation=new ArrayList<Integer>();
+				//Instantiate a connection with the database
+				Connection connectionDB1=BookingDAO.establishConnection();
+				if(connectionDB1!=null){
+					try{
+						Statement stmt = connectionDB1.createStatement();
+						//Re-format the location string
+						String loc=location.substring(0,1).toUpperCase()+location.substring(1);
+						//Select query
+						String query = "SELECT * FROM `desk` WHERE location='"+loc+"'";
+						//Execute the query
+						boolean status = stmt.execute(query);
+						if(status){
+							//Extract the data from the resultset object
+							ResultSet rs = stmt.getResultSet();
+							//Loop around the resultset
+							while(rs.next()){
+								int deskId=(Integer.parseInt(rs.getString("deskID")));
+								//Add the desk to the List
+								allSeatsLocation.add(deskId);
+							}
+							//Close the connection with the database
+							rs.close();
+						}
+					}catch(Exception e){}
+				}
+
+				//Verify which seats are still available
 				Calendar cal=new GregorianCalendar();
 				cal.setTime(startDateConverted);
-				for(int i=0; i<daysBetweenDates; i++){
-					List<Integer> seats=new ArrayList<Integer>();
+				for(int i=0; i<daysBetweenDates+1; i++){
+					//Make a copy of the all seats arraylist
+					List<Integer> seats=new ArrayList<Integer>(allSeatsLocation.size());
+					for(Integer val: allSeatsLocation){
+						seats.add(val);
+					}
+
 					//Verify if the day is a Saturday or a Sunday
 					int dayOfTheWeek=cal.get(Calendar.DAY_OF_WEEK);
 					//If the day is a Saturday or a Sunday, skip it
-					if(dayOfTheWeek==Calendar.SATURDAY || dayOfTheWeek==Calendar.SUNDAY){
-						//Add an empty Array to the list, indicating that no seats are available that day
-						availableSeats.add(seats);
+					if(dayOfTheWeek!=Calendar.SATURDAY && dayOfTheWeek!=Calendar.SUNDAY){
+						Connection connectionDB=BookingDAO.establishConnection();
+						if(connectionDB!=null){
+							try{
+								Statement stmt = connectionDB.createStatement();
+								//Re-format the location string
+								String loc=location.substring(0,1).toUpperCase()+location.substring(1);
+								//Convert the Java Date object to a SQL Date object
+								java.sql.Date selectedDate=new java.sql.Date(cal.getTime().getTime());
+								//Select query
+								String query = "SELECT * FROM `bookingdate` LEFT JOIN booking on "
+										+ "bookingdate.bookingID_FK=booking.bookingID WHERE date='"+selectedDate+"'";
+								//Execute the query
+								boolean status = stmt.execute(query);
+								if(status){
+									//Extract the data from the resultset object
+									ResultSet rs = stmt.getResultSet();
+									//Loop around the resultset
+									while(rs.next()){
+										int deskId=(Integer.parseInt(rs.getString("deskID_FK")));
+										//Remove this element from the list of available seats, since it has
+										//been reserved for a booking
+										if(seats.contains((Integer)deskId))
+											seats.remove((Integer)deskId);
+									}
+									//Close the connection with the database
+									rs.close();
+								}
+								availableSeats.add(seats);
+							}catch(Exception e){
+								return null;
+							}
+						}
 					}
 					else{
-
+						availableSeats.add(new ArrayList<Integer>());
 					}
-
-					availableSeats.add(seats);
 					//Add a day to the current date
 					cal.add(Calendar.DATE,1);
 				}
