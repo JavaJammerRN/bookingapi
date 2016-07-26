@@ -321,7 +321,7 @@ public class BookingDAO {
 	 * Once the connection has been established, a reference object is returned so that the other parts of the application can
 	 * use it to retrieve/create/modify data
 	 */
-	static Connection establishConnection(){
+	private static Connection establishConnection(){
 		Connection conn = null;
 		try {
 			// The newInstance() call is a work around for some broken Java implementations
