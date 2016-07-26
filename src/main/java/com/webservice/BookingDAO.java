@@ -4,16 +4,22 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 import com.mysql.jdbc.Connection;
 
 public class BookingDAO {
+
+	private final static String DATE_PATTERN="yyyy-MM-dd";
 
 	public static List<Booking> getAllBookings(){
 		Connection connectionDB=BookingDAO.establishConnection();
@@ -85,7 +91,7 @@ public class BookingDAO {
 					}
 					//Close the connection with the database
 					rs.close();
-					
+
 					//Now that all the bookings IDs have been found for a specific user, let's group them into single bookings with a start and end date
 					for(int i=0; i<userBookingIDs.size(); i++){
 						userBookings.add(getSingleBookingForSpecificUser(userId, userBookingIDs.get(i)));
@@ -97,7 +103,7 @@ public class BookingDAO {
 		}
 		return null;
 	}
-	
+
 	/*
 	 * This method retrieves a specific booking provided a user id and a booking id
 	 * 
@@ -126,7 +132,7 @@ public class BookingDAO {
 					Booking userBooking=new Booking();
 					java.sql.Date startDTemp=null;
 					java.sql.Date endDTemp=null;
-					
+
 					//Loop around the resultset to extract the data needed for each booking
 					while(rs.next()){
 						int deskId=(Integer.parseInt(rs.getString("deskID_FK")));
@@ -148,7 +154,7 @@ public class BookingDAO {
 					//Create temporary start date;
 					//Add 20 years to the current date
 					Calendar cal=Calendar.getInstance();
-					DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+					DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
 					Date date = new Date();
 					dateFormat.format(date);
 					cal.setTime(date);
@@ -166,19 +172,19 @@ public class BookingDAO {
 						if(bookingList.get(i).getStartDate().before(startDTemp))
 							startDTemp=bookingList.get(i).getStartDate();
 					}
-					
+
 					//Loop that finds the end date of the booking
 					for(int i=0; i<bookingList.size(); i++){
 						if(bookingList.get(i).getEndDate().after(startDTemp)){
 							endDTemp=bookingList.get(i).getEndDate();
 						}
 					}
-				
+
 					//Now that the start and end date of the booking have been found,
 					//pass the data to the booking object
 					userBooking.setStartDate(startDTemp.toString());
 					userBooking.setEndDate(endDTemp.toString());
-					
+
 					//The booking object now contains all the information required.
 					//Return it to the user
 					return userBooking;
@@ -193,21 +199,58 @@ public class BookingDAO {
 	 * The results are stored into a List of Integers, since each seat is identified with an unique number
 	 * 
 	 */
-	public static List<Integer> getAvailableSeatLocation(String location, String startD, String endD){
+	public static List<List<Integer>> getAvailableSeatLocation(String location, String startD, String endD){
 		if(!location.equals("")){
-			
+			//Convert the given strings into Date object
+			SimpleDateFormat dateFormatter=new SimpleDateFormat("yyyy-MM-dd");
+			try{
+				Date startDateConverted=dateFormatter.parse(startD);
+				Date endDateConverted=dateFormatter.parse(endD);
+				//Now that the strings are converted, let's find the numbers of days between them
+				int daysBetweenDates=getBookingLength(startDateConverted, endDateConverted);
+				//For each day, verify which seats are available
+
+				//Create the List that will contain all the bookings for each day
+				//Each location in the outer part of the array indicate the day
+				//Each location in the inner array contains a list of available seats
+				List<List<Integer>> availableSeats=new ArrayList<List<Integer>>();
+				//Vector<Vector<Integer>> seats=new Vector<Vector<Integer>>();
+				Calendar cal=new GregorianCalendar();
+				cal.setTime(startDateConverted);
+				for(int i=0; i<daysBetweenDates; i++){
+					List<Integer> seats=new ArrayList<Integer>();
+					//Verify if the day is a Saturday or a Sunday
+					int dayOfTheWeek=cal.get(Calendar.DAY_OF_WEEK);
+					//If the day is a Saturday or a Sunday, skip it
+					if(dayOfTheWeek==Calendar.SATURDAY || dayOfTheWeek==Calendar.SUNDAY){
+						//Add an empty Array to the list, indicating that no seats are available that day
+						availableSeats.add(seats);
+					}
+					else{
+
+					}
+
+					availableSeats.add(seats);
+					//Add a day to the current date
+					cal.add(Calendar.DATE,1);
+				}
+				return availableSeats;
+			}
+			catch(ParseException ex){
+				return null;
+			}
 		}
 		return null;
 	}
-	
+
 	/*
 	 * This method is used to calculate how many days the booking is for
 	 * 
 	 */
-	private int getBookingLength(String startDate, String endDate){
+	static int getBookingLength(Date startDate, Date endDate){
 		int counter=0;
-		//Convert the given strings into Date object
-		
+		long diff=endDate.getTime()-startDate.getTime();
+		counter=(int) TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
 		return counter;
 	}
 
