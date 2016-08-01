@@ -1,8 +1,6 @@
 package com.webservice;
 
-import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -44,12 +42,44 @@ public class BookingController {
 	}
 
 	@RequestMapping(value="/booking/checkAvailability", method=RequestMethod.GET)
-	public List<List<Integer>> retrieveSeatsAvailableOnPeriodOfTime(
+	public List<Integer> retrieveSeatsAvailableOnPeriodOfTime(
 			@RequestParam(value="location") String location, 
 			@RequestParam(value="startDate") String startDate, 
 			@RequestParam(value="endDate") String endDate){
 		try{
-			return BookingDAO.getAvailableSeatsLocation(location, startDate, endDate);
+			return BookingDAO.getAvailableSeatsLocationDateRange(location, startDate, endDate);
+		}catch(Exception e){
+			return null;
+		}
+	}
+
+	@RequestMapping(value="/booking/checkSingleAvailability", method=RequestMethod.GET)
+	public List<List<Integer>> retrieveSingleSeatsAvailableOnPeriodOfTime(
+			@RequestParam(value="location") String location, 
+			@RequestParam(value="startDate") String startDate, 
+			@RequestParam(value="endDate") String endDate){
+		try{
+			return BookingDAO.getIndividualSeatsAvailabilityForLocationDateRange(location, startDate, endDate);
+		}catch(Exception e){
+			return null;
+		}
+	}
+
+	@RequestMapping(value="/booking/seatsLocation", method=RequestMethod.GET)
+	public List<Desk> retrieveAllSeatsLocation(
+			@RequestParam(value="location") String location){
+		try{
+			return BookingDAO.getSeatsInfoLocation(location);
+		}catch(Exception e){
+			return null;
+		}
+	}
+
+	@RequestMapping(value="/booking/seatInfo", method=RequestMethod.GET)
+	public Desk retrieveSeatData(
+			@RequestParam(value="deskId") String deskId){
+		try{
+			return BookingDAO.retrieveDeskInfo(deskId);
 		}catch(Exception e){
 			return null;
 		}

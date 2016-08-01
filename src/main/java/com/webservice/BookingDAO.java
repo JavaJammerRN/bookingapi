@@ -6,13 +6,11 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
 import com.mysql.jdbc.Connection;
@@ -21,6 +19,10 @@ public class BookingDAO {
 
 	private final static String DATE_PATTERN="yyyy-MM-dd";
 
+	/*
+	 * This method returns all the bookings within the system
+	 * 
+	 */
 	public static List<Booking> getAllBookings(){
 		Connection connectionDB=BookingDAO.establishConnection();
 		//Create and initialise an object that will store all the bookings within the system
@@ -105,7 +107,7 @@ public class BookingDAO {
 	}
 
 	/*
-	 * This method retrieves a specific booking provided a user id and a booking id
+	 * This method retrieves a specific booking provided a user and a booking id
 	 * 
 	 */
 	public static Booking getSingleBookingForSpecificUser(int userId, int bookingId){
@@ -199,7 +201,7 @@ public class BookingDAO {
 	 * The results are stored into a List of Integers, since each seat is identified with an unique number
 	 * 
 	 */
-	public static List<List<Integer>> getAvailableSeatsLocation(String location, String startD, String endD){
+	public static List<List<Integer>> getIndividualSeatsAvailabilityForLocationDateRange(String location, String startD, String endD){
 		if(!location.equals("")){
 			//Convert the given strings into Date object
 			SimpleDateFormat dateFormatter=new SimpleDateFormat("yyyy-MM-dd");
@@ -215,33 +217,10 @@ public class BookingDAO {
 				//Each location in the inner array contains a list of available seats
 				List<List<Integer>> availableSeats=new ArrayList<List<Integer>>();
 
+				//Re-format the location string
+				String loc=location.substring(0,1).toUpperCase()+location.substring(1);
 				//Retrieve a list of all the seats for the given location
-				List<Integer> allSeatsLocation=new ArrayList<Integer>();
-				//Instantiate a connection with the database
-				Connection connectionDB1=BookingDAO.establishConnection();
-				if(connectionDB1!=null){
-					try{
-						Statement stmt = connectionDB1.createStatement();
-						//Re-format the location string
-						String loc=location.substring(0,1).toUpperCase()+location.substring(1);
-						//Select query
-						String query = "SELECT * FROM `desk` WHERE location='"+loc+"'";
-						//Execute the query
-						boolean status = stmt.execute(query);
-						if(status){
-							//Extract the data from the resultset object
-							ResultSet rs = stmt.getResultSet();
-							//Loop around the resultset
-							while(rs.next()){
-								int deskId=(Integer.parseInt(rs.getString("deskID")));
-								//Add the desk to the List
-								allSeatsLocation.add(deskId);
-							}
-							//Close the connection with the database
-							rs.close();
-						}
-					}catch(Exception e){}
-				}
+				List<Integer> allSeatsLocation=getSeatsLocation(loc);
 
 				//Verify which seats are still available
 				Calendar cal=new GregorianCalendar();
@@ -261,8 +240,6 @@ public class BookingDAO {
 						if(connectionDB!=null){
 							try{
 								Statement stmt = connectionDB.createStatement();
-								//Re-format the location string
-								String loc=location.substring(0,1).toUpperCase()+location.substring(1);
 								//Convert the Java Date object to a SQL Date object
 								java.sql.Date selectedDate=new java.sql.Date(cal.getTime().getTime());
 								//Select query
@@ -306,8 +283,165 @@ public class BookingDAO {
 	}
 
 	/*
+	 * This method returns a list of seats which are available for each day of the date range at the location provided
+	 */
+	public static List<Integer> getAvailableSeatsLocationDateRange(String location, String startD, String endD){
+		//Re-format the location string
+		String loc=location.substring(0,1).toUpperCase()+location.substring(1);
+		//Get the seats available for each day of the date range
+		List<List<Integer>> availableSeats=getIndividualSeatsAvailabilityForLocationDateRange(loc, startD, endD);
+		//Get all the seats for the location
+		List<Integer> allSeatsLocation=getSeatsLocation(loc);
+		//The application will return only the common seats available for the given date range
+		//therefore, we need to create an array which contains the common seats number
+		List<Integer> commonSeats=new ArrayList<Integer>();
+		for(int i=0; i<allSeatsLocation.size(); i++){
+			boolean isInserted=true;
+			//Check if the element is contained in any of the array
+			for(int j=0; j<availableSeats.size(); j++){
+				//If the element is not contained, change the value of the flag
+				if(!isElementInArray(allSeatsLocation.get(i), availableSeats.get(j)))
+					isInserted=false;
+			}
+			//If the value of the flag is not changed, it means the value is in all of the arrays and can be added to the common list
+			if(isInserted){
+				commonSeats.add(allSeatsLocation.get(i));
+			}
+		}
+		return commonSeats;
+	}
+
+	/*
+	 * This method returns a list of seats ID for the location provided
+	 */
+	public static List<Integer> getSeatsLocation (String location){
+		//Re-format the location string
+		String loc=location.substring(0,1).toUpperCase()+location.substring(1);
+		//Retrieve a list of all the seats for the given location
+		List<Integer> allSeatsLocation=new ArrayList<Integer>();
+		//Instantiate a connection with the database
+		Connection connectionDB1=BookingDAO.establishConnection();
+		if(connectionDB1!=null){
+			try{
+				Statement stmt = connectionDB1.createStatement();
+				//Select query
+				String query = "SELECT * FROM `desk` WHERE location='"+loc+"'";
+				//Execute the query
+				boolean status = stmt.execute(query);
+				if(status){
+					//Extract the data from the resultset object
+					ResultSet rs = stmt.getResultSet();
+					//Loop around the resultset
+					while(rs.next()){
+						int deskId=(Integer.parseInt(rs.getString("deskID")));
+						//Add the desk to the List
+						allSeatsLocation.add(deskId);
+					}
+					//Close the connection with the database
+					rs.close();
+				}
+				return allSeatsLocation;
+			}catch(Exception e){
+				return null;
+			}
+		}
+		return null;
+	}
+
+	/*
+	 * This methods returns all the information for each seat on the location provided
+	 */
+	public static List<Desk> getSeatsInfoLocation(String location){
+		//Retrieve a list of all the seats for the given location
+		List<Desk> allSeats=new ArrayList<Desk>();
+		//Instantiate a connection with the database
+		Connection connectionDB1=BookingDAO.establishConnection();
+		if(connectionDB1!=null){
+			try{
+				Statement stmt = connectionDB1.createStatement();
+				//Re-format the location string
+				String loc=location.substring(0,1).toUpperCase()+location.substring(1);
+				//Select query
+				String query = "SELECT * FROM `desk` WHERE location='"+loc+"'";
+				//Execute the query
+				boolean status = stmt.execute(query);
+				if(status){
+					//Extract the data from the resultset object
+					ResultSet rs = stmt.getResultSet();
+					//Loop around the resultset
+					while(rs.next()){
+						Desk temp=new Desk();
+						temp.setDeskID(Integer.parseInt(rs.getString("deskID")));
+						temp.setDeskBlock(Integer.parseInt(rs.getString("deskBlock")));
+						temp.setDeskLetter(rs.getString("deskLetter"));
+						temp.setLocation(rs.getString("location"));
+						//Add the desk to the List
+						allSeats.add(temp);
+					}
+					//Close the connection with the database
+					rs.close();
+				}
+				return allSeats;
+			}catch(Exception e){
+				return null;
+			}
+		}
+		return null;
+	}
+
+	/*
+	 * This method returns info for a selected seat ID
+	 */
+	public static Desk retrieveDeskInfo(String id){
+		int idConverted;
+		Desk deskData=new Desk();
+		try{
+			idConverted=Integer.parseInt(id);
+			if(idConverted>0){
+				//Instantiate a connection with the database
+				Connection connectionDB=BookingDAO.establishConnection();
+				if(connectionDB!=null){
+					Statement stmt = connectionDB.createStatement();
+					//Select query
+					String query = "SELECT * FROM `desk` WHERE deskID='"+idConverted+"'";
+					//Execute the query
+					boolean status = stmt.execute(query);
+					if(status){
+						//Extract the data from the resultset object
+						ResultSet rs = stmt.getResultSet();
+						//Loop around the resultset
+						while(rs.next()){
+							deskData.setDeskID(Integer.parseInt(rs.getString("deskID")));
+							deskData.setDeskBlock(Integer.parseInt(rs.getString("deskBlock")));
+							deskData.setDeskLetter(rs.getString("deskLetter"));
+							deskData.setLocation(rs.getString("location"));
+						}
+						//Close the connection with the database
+						rs.close();
+					}
+				}
+			}
+		}
+		catch(Exception e){
+			return null;
+		}
+		return deskData;
+	}
+
+	/*
+	 * This Method verify if an element is contained within an array and returns TRUE or FALSE
+	 */
+	private static boolean isElementInArray(int value, List<Integer>range){
+		//If the array is empty, it may be because the selected day is a SaturdaySunday or because all the seats are taken,
+		// in any case, the application 
+		if(range.isEmpty())
+			return true;
+		else
+			return range.contains((Integer)value);
+	}
+
+	/*
 	 * This method is used to calculate how many days the booking is for
-	 * 
 	 */
 	static int getBookingLength(Date startDate, Date endDate){
 		int counter=0;
@@ -317,8 +451,8 @@ public class BookingDAO {
 	}
 
 	/*
-	 * This method provides to establish a connection with the MySQL Database.
-	 * Once the connection has been established, a reference object is returned so that the other parts of the application can
+	 * This method establishes a connection with the MySQL Database.
+	 * Once the connection has been established, a reference of the object is returned so that the other parts of the application can
 	 * use it to retrieve/create/modify data
 	 */
 	private static Connection establishConnection(){
