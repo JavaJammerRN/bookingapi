@@ -1,0 +1,79 @@
+[33mcommit e4013f1aa623b95e4d79c8937cb9b8f507cb97e4[m
+Author: PICCOLI Michael <michael.piccoli@soprasteria.com>
+Date:   Mon Aug 1 15:40:56 2016 +0100
+
+    Michael's APIs Completed
+
+[33mcommit 91128c63279b2dcecf9f1b2c9024924a88106b9b[m
+Author: PICCOLI Michael <michael.piccoli@soprasteria.com>
+Date:   Tue Jul 26 13:37:40 2016 +0100
+
+    Michael's Tasks Completed
+
+[33mcommit 311ae86c8aa02ba88eaeadedb67ad99f980318fb[m
+Author: PICCOLI Michael <michael.piccoli@soprasteria.com>
+Date:   Tue Jul 26 12:49:18 2016 +0100
+
+    Implementation of retieveallseatsforlocation given a start and end date
+    completed
+
+[33mcommit a4618299caabdfcaeea230799641ead5735fcad2[m
+Author: PICCOLI Michael <michael.piccoli@soprasteria.com>
+Date:   Tue Jul 26 10:52:15 2016 +0100
+
+    Edits Added
+
+[33mcommit adfbb4ef83dff7204fa0bf4d0011e42b2537f03f[m
+Author: PICCOLI Michael <michael.piccoli@soprasteria.com>
+Date:   Mon Jul 25 17:32:29 2016 +0100
+
+    End of the day update
+
+[33mcommit ba4c87fd86200822acd9f3074793489725b401f9[m
+Author: PICCOLI Michael <michael.piccoli@soprasteria.com>
+Date:   Mon Jul 25 16:44:46 2016 +0100
+
+    getAllBookingsForSpecificUser is now updated and fully working
+
+[33mcommit 2ed3615208f76033fcaaefea476f75e65352826e[m
+Author: PICCOLI Michael <michael.piccoli@soprasteria.com>
+Date:   Mon Jul 25 14:50:42 2016 +0100
+
+    Update 25 July 2016
+
+[33mcommit 652ce5d62dd989e7d8a391d1e3b61b8babc64814[m
+Author: PICCOLI Michael <michael.piccoli@soprasteria.com>
+Date:   Fri Jul 22 12:05:47 2016 +0100
+
+    :wq
+    with '#' will be ignored, and an empty message aborts the commit.
+
+[33mcommit 28b7725038bbb05c08e614b471247c208647863b[m
+Author: PICCOLI Michael <michael.piccoli@soprasteria.com>
+Date:   Fri Jul 22 11:36:33 2016 +0100
+
+    Retrieve all bookings for a user
+
+[33mcommit eb62c95f87fa9d79ba20562d6a31191636f0c635[m
+Author: PICCOLI Michael <michael.piccoli@soprasteria.com>
+Date:   Thu Jul 21 12:18:48 2016 +0100
+
+    Connection and Retrieve all bookings
+
+[33mcommit e599db10659e77be8948e4b3952bc782840dcfd0[m
+Author: NACEF Ridhwan <ridhwan.nacef@soprasteria.com>
+Date:   Thu Jul 21 09:43:10 2016 +0100
+
+    Initial Commit - Project has been set up with spring rest frame work.
+
+[33mcommit 800d5ee72331548e98f34f2cfebcb86b3e7037d1[m
+Author: JavaJammerRN <redhwan.nacef@skooravi.com>
+Date:   Tue Jul 19 09:19:47 2016 +0100
+
+    Update README.md
+
+[33mcommit b0e10a4bab0209c5b706af4c3f69b47eb603aaaf[m
+Author: JavaJammerRN <redhwan.nacef@skooravi.com>
+Date:   Tue Jul 19 09:12:52 2016 +0100
+
+    Initial commit

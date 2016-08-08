@@ -4,6 +4,8 @@ package com.webservice;
 import java.util.List;
 import java.sql.SQLException;
 import java.text.ParseException;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -92,21 +94,21 @@ public class BookingController {
     //POST - create new booking
     @CrossOrigin(origins = "*")
     @RequestMapping(value = "/booking", method=RequestMethod.POST)
-    public @ResponseBody String createBooking(@RequestParam int userID, @RequestParam int deskID, @RequestParam String startDate, @RequestParam String endDate) throws SQLException, ParseException  {
+    public @ResponseBody ResponseEntity<String> createBooking(@RequestParam int userID, @RequestParam int deskID, @RequestParam String startDate, @RequestParam String endDate) throws SQLException, ParseException  {
     	return BookingDAO.createBooking(userID, deskID, startDate, endDate);
     }
     
     //PUT - update existing booking
     @CrossOrigin(origins = "*")
     @RequestMapping(value = "/booking/{bookingID}", method=RequestMethod.PUT)
-    public String updateBooking(@PathVariable int bookingID, @RequestParam String newStartDate, @RequestParam String newEndDate) throws SQLException, ParseException  {
+    public @ResponseBody ResponseEntity<String> updateBooking(@PathVariable int bookingID, @RequestParam String newStartDate, @RequestParam String newEndDate) throws SQLException, ParseException  {
     	return BookingDAO.updateBooking(bookingID, newStartDate, newEndDate);
     }
     
     //DELETE - delete existing booking
     @CrossOrigin(origins = "*")
     @RequestMapping(value = "/booking/{bookingID}", method=RequestMethod.DELETE)
-    public @ResponseBody String deleteBooking(@PathVariable int bookingID)   {
+    public @ResponseBody ResponseEntity<String> deleteBooking(@PathVariable int bookingID)   {
     	return BookingDAO.deleteBooking(bookingID);
     }
     

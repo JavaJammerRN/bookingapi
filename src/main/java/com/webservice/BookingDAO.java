@@ -1,6 +1,5 @@
 package com.webservice;
 
-import java.sql.BatchUpdateException;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,9 +13,9 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.springframework.http.ResponseEntity;
 import java.time.LocalDate;
 import java.sql.PreparedStatement;
-import java.util.Vector;
 import com.mysql.jdbc.Connection;
 
 
@@ -455,21 +454,16 @@ public class BookingDAO {
 		return counter;
 	}
 
-	/*
-	 * This method establishes a connection with the MySQL Database.
-	 * Once the connection has been established, a reference of the object is returned so that the other parts of the application can
-	 * use it to retrieve/create/modify data
-	 */
 	
 	//Method to create booking for a specified user
-	public static String createBooking(int userID, int deskID, String inputStartDate, String inputEndDate) throws SQLException, ParseException{
+	public static ResponseEntity<String> createBooking(int userID, int deskID, String inputStartDate, String inputEndDate) throws SQLException, ParseException{
 
 		try{
-			//Get connection & disable auto commit for batch excecution
+			//Get connection & disable auto commit for batch execution
 			Connection conn = BookingDAO.establishConnection();
 			conn.setAutoCommit(false);
 			
-			//Instert into booking table, return auto generated ID
+			//Insert into booking table, return auto generated ID
 			PreparedStatement stmt = conn.prepareStatement("INSERT INTO booking (userID_FK, deskID_FK) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS);
 			stmt.setInt(1, userID);
 			stmt.setInt(2, deskID);
@@ -483,20 +477,20 @@ public class BookingDAO {
 	            }
 	        }
 			
-			//Insert bookin dates records an commit
+			//Insert booking dates records and commit
 			instertBookingDates(conn, stmt, generatedUserID, inputStartDate, inputEndDate);
 			conn.commit();
-			return "Booking has been created";
-		} catch(SQLException ex) {
-	        return ex.toString();
+			return ResponseEntity.ok("Booking has been created");
+		} catch(SQLException SQLe) {
+	        return ResponseEntity.badRequest().body(SQLe.toString());
 	    }
 		
 	}
 	
 	//Method to update booking for a specified user
-	public static String updateBooking(int bookingID, String newStartDate, String newEndDate) throws SQLException, ParseException{
+	public static ResponseEntity<String> updateBooking(int bookingID, String newStartDate, String newEndDate) throws SQLException, ParseException{
 		try{
-			//Get connection & disable auto commit for batch excecution
+			//Get connection & disable auto commit for batch execution
 			Connection conn = BookingDAO.establishConnection();
 			conn.setAutoCommit(false);
 			
@@ -504,29 +498,30 @@ public class BookingDAO {
 			stmt.setInt(1, bookingID);
 			stmt.executeUpdate();
 			
-			//Insert bookin dates records an commit
+			//Insert booking dates records an commit
 			instertBookingDates(conn, stmt, bookingID, newStartDate, newEndDate);
 			conn.commit();
-			return "Booking: " + bookingID + " has been updated.";
-		}catch(SQLException e){
-			return e.toString();
+			return ResponseEntity.ok("Booking: " + bookingID + " has been updated.");
+		}catch(SQLException SQLe){
+			return ResponseEntity.badRequest().body(SQLe.toString());
 		}
 		
 	}
 	
-	public static String deleteBooking(int bookingID) {
+	//Method to delete a booking
+	public static ResponseEntity<String> deleteBooking(int bookingID) {
 		try{
-			//Get connection & disable auto commit for batch excecution
+			//Get connection & disable auto commit for batch execution
 			Connection conn = BookingDAO.establishConnection();
-			conn.setAutoCommit(false);
+//			conn.setAutoCommit(false);
 			
 			PreparedStatement stmt = conn.prepareStatement("DELETE FROM booking WHERE bookingID = ?");
 			stmt.setInt(1, bookingID);
 			stmt.executeUpdate();
-			conn.commit();
-			return "Booking " + bookingID + " has been deleted.";
-		}catch(SQLException e){
-			return e.toString();
+//			conn.commit();
+			return ResponseEntity.ok("Booking " + bookingID + " has been deleted.");
+		}catch(SQLException SQLe){
+			return ResponseEntity.badRequest().body(SQLe.toString());
 		}
 	}
 	
