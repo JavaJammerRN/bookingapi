@@ -12,11 +12,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.springframework.http.ResponseEntity;
 import java.time.LocalDate;
 import java.sql.PreparedStatement;
 import com.mysql.jdbc.Connection;
+import com.webservice.Validate.Validator;
 
 
 public class BookingDAO {
@@ -457,7 +459,10 @@ public class BookingDAO {
 	
 	//Method to create booking for a specified user
 	public static ResponseEntity<String> createBooking(int userID, int deskID, String inputStartDate, String inputEndDate) throws SQLException, ParseException{
-
+		Validator val = Validate.validateCreateBooking(userID, deskID, inputStartDate, inputEndDate);
+		if(!val.pass){
+			return ResponseEntity.badRequest().body(val.message);
+		}
 		try{
 			//Get connection & disable auto commit for batch execution
 			Connection conn = BookingDAO.establishConnection();
@@ -482,13 +487,17 @@ public class BookingDAO {
 			conn.commit();
 			return ResponseEntity.ok("Booking has been created");
 		} catch(SQLException SQLe) {
-	        return ResponseEntity.badRequest().body(SQLe.toString());
+	        return ResponseEntity.badRequest().body("Please make sure the data you have entered is correct.");
 	    }
 		
 	}
 	
 	//Method to update booking for a specified user
 	public static ResponseEntity<String> updateBooking(int bookingID, String newStartDate, String newEndDate) throws SQLException, ParseException{
+		Validator val = Validate.validateUpdateBooking(bookingID, newStartDate, newEndDate);
+		if(!val.pass){
+			return ResponseEntity.badRequest().body(val.message);
+		}
 		try{
 			//Get connection & disable auto commit for batch execution
 			Connection conn = BookingDAO.establishConnection();
@@ -510,6 +519,10 @@ public class BookingDAO {
 	
 	//Method to delete a booking
 	public static ResponseEntity<String> deleteBooking(int bookingID) {
+		Validator val = Validate.validateDeleteBooking(bookingID);
+		if(!val.pass){
+			return ResponseEntity.badRequest().body(val.message);
+		}
 		try{
 			//Get connection & disable auto commit for batch execution
 			Connection conn = BookingDAO.establishConnection();
@@ -526,7 +539,7 @@ public class BookingDAO {
 	}
 	
 	
-	private static void instertBookingDates(Connection conn, PreparedStatement stmt, int generatedUserID, String inputStartDate, String inputEndDate) throws SQLException, ParseException{
+	public static void instertBookingDates(Connection conn, PreparedStatement stmt, int generatedUserID, String inputStartDate, String inputEndDate) throws SQLException, ParseException{
 		stmt = conn.prepareStatement("INSERT INTO bookingdate (bookingID_FK, date) VALUES(?,?)");
 		LocalDate startDate = LocalDate.parse(inputStartDate);
 		LocalDate endDate = LocalDate.parse(inputEndDate);
@@ -538,13 +551,13 @@ public class BookingDAO {
 		 stmt.executeBatch();
 	}
 	
-	private static java.sql.Date stringToSQLDate(String stringDate) throws ParseException{
+	public static java.sql.Date stringToSQLDate(String stringDate) throws ParseException{
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		java.util.Date dateStr = formatter.parse(stringDate);
 		return  new java.sql.Date(dateStr.getTime());
 	}
 	
-	private static Connection establishConnection(){
+	public static Connection establishConnection(){
 		Connection conn = null;
 		try {
 			// The newInstance() call is a work around for some broken Java implementations

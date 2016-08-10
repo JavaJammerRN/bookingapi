@@ -32,7 +32,7 @@ public class BookingController {
 		}
 	}
 
-	@RequestMapping(value="/booking/user/{userID}/ref/{bookingID}", method=RequestMethod.GET)
+	@RequestMapping(value="/booking/{userID}/ref/{bookingID}", method=RequestMethod.GET)
 	public Booking userSpecificBooking(
 			@PathVariable("userID") String userID, 
 			@PathVariable("bookingID") String bookingID){
