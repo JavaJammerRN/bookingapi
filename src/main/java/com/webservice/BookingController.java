@@ -71,7 +71,7 @@ public class BookingController {
 	}
 
 	@RequestMapping(value="/booking/seatsLocation", method=RequestMethod.GET)
-	public List<Desk> retrieveAllSeatsLocation(
+	public ResponseEntity<?> retrieveAllSeatsLocation(
 			@RequestParam(value="location") String location){
 		try{
 			return BookingDAO.getSeatsInfoLocation(location);
@@ -81,7 +81,7 @@ public class BookingController {
 	}
 
 	@RequestMapping(value="/booking/seatInfo", method=RequestMethod.GET)
-	public Desk retrieveSeatData(
+	public ResponseEntity<?> retrieveSeatData(
 			@RequestParam(value="deskId") String deskId){
 		try{
 			return BookingDAO.retrieveDeskInfo(deskId);

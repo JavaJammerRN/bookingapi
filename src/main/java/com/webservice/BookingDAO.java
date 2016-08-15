@@ -357,7 +357,7 @@ public class BookingDAO {
 	/*
 	 * This methods returns all the information for each seat on the location provided
 	 */
-	public static List<Desk> getSeatsInfoLocation(String location){
+	public static ResponseEntity<?> getSeatsInfoLocation(String location){
 		//Retrieve a list of all the seats for the given location
 		List<Desk> allSeats=new ArrayList<Desk>();
 		//Instantiate a connection with the database
@@ -387,18 +387,18 @@ public class BookingDAO {
 					//Close the connection with the database
 					rs.close();
 				}
-				return allSeats;
+				return ResponseEntity.ok(allSeats);
 			}catch(Exception e){
-				return null;
+				return ResponseEntity.badRequest().body("MESSAGE");
 			}
 		}
-		return null;
+		return ResponseEntity.badRequest().body("MESSAGE");
 	}
 
 	/*
 	 * This method returns info for a selected seat ID
 	 */
-	public static Desk retrieveDeskInfo(String id){
+	public static ResponseEntity<?> retrieveDeskInfo(String id){
 		int idConverted;
 		Desk deskData=new Desk();
 		try{
@@ -429,9 +429,9 @@ public class BookingDAO {
 			}
 		}
 		catch(Exception e){
-			return null;
+			return ResponseEntity.badRequest().body("MESSAGE");
 		}
-		return deskData;
+		return ResponseEntity.ok(deskData);
 	}
 
 	/*
@@ -449,7 +449,7 @@ public class BookingDAO {
 	/*
 	 * This method is used to calculate how many days the booking is for
 	 */
-	static int getBookingLength(Date startDate, Date endDate){
+	private static int getBookingLength(Date startDate, Date endDate){
 		int counter=0;
 		long diff=endDate.getTime()-startDate.getTime();
 		counter=(int) TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
@@ -563,9 +563,9 @@ public class BookingDAO {
 			// The newInstance() call is a work around for some broken Java implementations
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			//Use for Michaels DB
-//			conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195GRV:3306/hotdesk_db?" +"user=hotdesk&password=hotdesk");
+			conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195GRV:3306/hotdesk_db?" +"user=hotdesk&password=hotdesk");
 			//Use for Reds DB
-			conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195G1Q:3306/hotdesk?" +"user=hotdesk&password=hotdesk");
+			//conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195G1Q:3306/hotdesk?" +"user=hotdesk&password=hotdesk");
 		} catch (Exception error) {
 			System.err.println("Could not establish a connection with the DataBase! "+error);
 		}
