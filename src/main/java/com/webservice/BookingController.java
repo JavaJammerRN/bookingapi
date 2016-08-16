@@ -47,26 +47,46 @@ public class BookingController {
 	}
 
 	@RequestMapping(value="/booking/checkAvailability", method=RequestMethod.GET)
-	public List<Integer> retrieveSeatsAvailableOnPeriodOfTime(
+	public ResponseEntity<?> retrieveSeatsAvailableOnPeriodOfTime(
 			@RequestParam(value="location") String location, 
 			@RequestParam(value="startDate") String startDate, 
 			@RequestParam(value="endDate") String endDate){
-		try{
-			return BookingDAO.getAvailableSeatsLocationDateRange(location, startDate, endDate);
-		}catch(Exception e){
-			return null;
+		try {
+			Object obj = BookingDAO.getAvailableSeatsLocationDateRange(location, startDate, endDate);
+			if(obj!=null){
+				return ResponseEntity.ok((List<Integer>)obj);
+			}
+			else{
+				return ResponseEntity.badRequest().body("Empty Object");
+			}
+			//Catch any exception (mysql, numconversion) threw by the method and output them into a bad request  
+		}catch (Exception e) {
+			return ResponseEntity.badRequest().body(e.toString());
 		}
 	}
 
 	@RequestMapping(value="/booking/checkSingleAvailability", method=RequestMethod.GET)
-	public List<List<Integer>> retrieveSingleSeatsAvailableOnPeriodOfTime(
+	public ResponseEntity<?> retrieveSingleSeatsAvailableOnPeriodOfTime(
 			@RequestParam(value="location") String location, 
 			@RequestParam(value="startDate") String startDate, 
 			@RequestParam(value="endDate") String endDate){
-		try{
-			return BookingDAO.getIndividualSeatsAvailabilityForLocationDateRange(location, startDate, endDate);
-		}catch(Exception e){
-			return null;
+		try {
+			Object obj = BookingDAO.getIndividualSeatsAvailabilityForLocationDateRange(location, startDate, endDate);
+			if(obj!=null){
+				return ResponseEntity.ok((List<Integer>)obj);
+			}
+			else{
+				return ResponseEntity.badRequest().body("Invalid Location");
+			}
+			//Catch any exception (mysql, numconversion) threw by the method and output them into a bad request  
+		}catch(ParseException ex){
+			return ResponseEntity.badRequest().body("Error while finding the numbers of days between the given dates");
+		}
+		catch(SQLException  mysqlE){
+			return ResponseEntity.badRequest().body("DB Error");
+		}
+		catch(Exception e){
+			return ResponseEntity.badRequest().body("General Error");
 		}
 	}
 
@@ -90,29 +110,29 @@ public class BookingController {
 		}
 	}
 
-    
-    //POST - create new booking
-    @CrossOrigin(origins = "*")
-    @RequestMapping(value = "/booking", method=RequestMethod.POST)
-    public @ResponseBody ResponseEntity<String> createBooking(@RequestParam int userID, @RequestParam int deskID, @RequestParam String startDate, @RequestParam String endDate) throws SQLException, ParseException  {
-    	return BookingDAO.createBooking(userID, deskID, startDate, endDate);
-    }
-    
-    //PUT - update existing booking
-    @CrossOrigin(origins = "*")
-    @RequestMapping(value = "/booking/{bookingID}", method=RequestMethod.PUT)
-    public @ResponseBody ResponseEntity<String> updateBooking(@PathVariable int bookingID, @RequestParam String newStartDate, @RequestParam String newEndDate) throws SQLException, ParseException  {
-    	return BookingDAO.updateBooking(bookingID, newStartDate, newEndDate);
-    }
-    
-    //DELETE - delete existing booking
-    @CrossOrigin(origins = "*")
-    @RequestMapping(value = "/booking/{bookingID}", method=RequestMethod.DELETE)
-    public @ResponseBody ResponseEntity<String> deleteBooking(@PathVariable int bookingID)   {
-    	return BookingDAO.deleteBooking(bookingID);
-    }
-    
-    
+
+	//POST - create new booking
+	@CrossOrigin(origins = "*")
+	@RequestMapping(value = "/booking", method=RequestMethod.POST)
+	public @ResponseBody ResponseEntity<String> createBooking(@RequestParam int userID, @RequestParam int deskID, @RequestParam String startDate, @RequestParam String endDate) throws SQLException, ParseException  {
+		return BookingDAO.createBooking(userID, deskID, startDate, endDate);
+	}
+
+	//PUT - update existing booking
+	@CrossOrigin(origins = "*")
+	@RequestMapping(value = "/booking/{bookingID}", method=RequestMethod.PUT)
+	public @ResponseBody ResponseEntity<String> updateBooking(@PathVariable int bookingID, @RequestParam String newStartDate, @RequestParam String newEndDate) throws SQLException, ParseException  {
+		return BookingDAO.updateBooking(bookingID, newStartDate, newEndDate);
+	}
+
+	//DELETE - delete existing booking
+	@CrossOrigin(origins = "*")
+	@RequestMapping(value = "/booking/{bookingID}", method=RequestMethod.DELETE)
+	public @ResponseBody ResponseEntity<String> deleteBooking(@PathVariable int bookingID)   {
+		return BookingDAO.deleteBooking(bookingID);
+	}
+
+
 }
 
 
