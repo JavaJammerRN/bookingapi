@@ -24,7 +24,11 @@ import com.webservice.Validate.Validator;
 
 public class BookingDAO {
 
+	//Declare and Initiate the Constants used within this class
 	private final static String DATE_PATTERN="yyyy-MM-dd";
+	private final static String ERROR_CONNECTIONDB="DB Connection Error";
+	private final static String ERROR_APPLICATION="Application Error";
+	private final static String ERROR_DBREQUEST="DB Request Error";
 
 	/*
 	 * This method returns all the bookings within the system
@@ -128,9 +132,10 @@ public class BookingDAO {
 			try{
 				Statement stmt = connectionDB.createStatement();
 				//Select query
-				String query = "SELECT * FROM `booking` LEFT JOIN "
-						+ "desk on booking.deskID_FK=desk.deskID LEFT JOIN bookingdate on "
-						+ "booking.bookingID=bookingdate.bookingID_FK WHERE userID_FK='"+userId+"' AND bookingID='"+bookingId+"'";
+				String query = "SELECT * FROM `booking` "
+						+ "LEFT JOIN desk on booking.deskID_FK=desk.deskID "
+						+ "LEFT JOIN bookingdate on booking.bookingID=bookingdate.bookingID_FK "
+						+ "WHERE userID_FK='"+userId+"' AND bookingID='"+bookingId+"'";
 				//Execute the query
 				boolean status = stmt.execute(query);
 				if(status){
@@ -154,7 +159,7 @@ public class BookingDAO {
 					}
 					//Close the connection with the database
 					rs.close();
-
+					connectionDB.close();
 					//The Booking objects inside the bookingList are all the same apart from the date of the booking.
 					//The following code will find the first and last date for the given booking id, add them to the Booking object
 					//and return it to the user
@@ -237,7 +242,8 @@ public class BookingDAO {
 				Connection connectionDB=BookingDAO.establishConnection();
 				Statement stmt = connectionDB.createStatement();
 				//Select query
-				String query= "SELECT * FROM `bookingdate` LEFT JOIN booking INNER JOIN `desk` "
+				String query= "SELECT * FROM `bookingdate` "
+						+ "LEFT JOIN booking INNER JOIN `desk` "
 						+ "ON booking.deskID_FK = desk.deskID "
 						+ "ON bookingdate.bookingID_FK=booking.bookingID "
 						+ "WHERE date BETWEEN '"+startD+"' AND '"+endD+"'"
@@ -287,23 +293,6 @@ public class BookingDAO {
 			}
 		}
 		return null;
-	}
-
-	private static List<java.sql.Date> getDatesInResultSet(ResultSet res, int deskID){
-		List<java.sql.Date> dates=new ArrayList();
-		try{
-			//Convert the resultSet into an arrayList
-			while (res.next()) {
-				if(res.getInt("deskID")==deskID){
-					//Retrieve the booking date and convert it into a java.sql.Date object
-					dates.add(stringToSQLDate(res.getString("date")));
-				}
-			}
-			res.first();
-			return dates;
-		}catch(Exception e){
-			return null;
-		}
 	}
 
 	/*
@@ -368,15 +357,16 @@ public class BookingDAO {
 				}
 				//Close the connection with the database
 				rs.close();
+				connectionDB.close();
 			}
 			else{
-				return ResponseEntity.badRequest().body("Something went wrong with the DB request");
+				return ResponseEntity.badRequest().body(ERROR_DBREQUEST);
 			}
 			return ResponseEntity.ok(allSeats);
 		}catch(SQLException  mysqlE){
-			return ResponseEntity.badRequest().body("DB Connection Error");
+			return ResponseEntity.badRequest().body(ERROR_CONNECTIONDB);
 		}catch(Exception e){
-			return ResponseEntity.badRequest().body("Application Error");
+			return ResponseEntity.badRequest().body(ERROR_APPLICATION);
 		}
 	}
 
@@ -408,13 +398,14 @@ public class BookingDAO {
 					}
 					//Close the connection with the database
 					rs.close();
+					connectionDB.close();
 				}
 			}
 			else{
 				return ResponseEntity.badRequest().body("DeskID must be a value > 0");
 			}
 		}catch(SQLException  mysqlE){
-			return ResponseEntity.badRequest().body("DB Connection Error");
+			return ResponseEntity.badRequest().body(ERROR_CONNECTIONDB);
 		}catch(NumberFormatException numE){
 			return ResponseEntity.badRequest().body("Invalid Desk ID");
 		}catch(Exception e){
@@ -560,10 +551,10 @@ public class BookingDAO {
 		//Retrieve a list of all the seats for the given location
 		List<Integer> allSeatsLocation=new ArrayList<Integer>();
 		//Instantiate a connection with the database
-		Connection connectionDB1=BookingDAO.establishConnection();
-		if(connectionDB1!=null){
+		Connection connectionDB=BookingDAO.establishConnection();
+		if(connectionDB!=null){
 			try{
-				Statement stmt = connectionDB1.createStatement();
+				Statement stmt = connectionDB.createStatement();
 				//Select query
 				String query = "SELECT * FROM `desk` WHERE location='"+loc+"'";
 				//Execute the query
@@ -579,6 +570,7 @@ public class BookingDAO {
 					}
 					//Close the connection with the database
 					rs.close();
+					connectionDB.close();
 				}
 				return allSeatsLocation;
 			}catch(Exception e){
@@ -586,6 +578,28 @@ public class BookingDAO {
 			}
 		}
 		return null;
+	}
+	
+	/*
+	 * This method extract the dates from the resultset passed as a parameter to match the results
+	 * to the deskID
+	 */
+	private static List<java.sql.Date> getDatesInResultSet(ResultSet res, int deskID){
+		List<java.sql.Date> dates=new ArrayList<java.sql.Date>();
+		try{
+			//Convert the resultSet into an arrayList
+			while (res.next()) {
+				if(res.getInt("deskID")==deskID){
+					//Retrieve the booking date and convert it into a java.sql.Date object
+					dates.add(stringToSQLDate(res.getString("date")));
+				}
+			}
+			//Re-position the resultset object to index 0
+			res.first();
+			return dates;
+		}catch(Exception e){
+			return null;
+		}
 	}
 
 	static Connection establishConnection(){

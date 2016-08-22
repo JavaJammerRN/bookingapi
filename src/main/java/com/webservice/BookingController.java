@@ -18,19 +18,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class BookingController {
 
+	//Declare and Initiate the Constants used within this class
+	private final static String ERROR_APPLICATION="Application Error";
+	private final static String ERROR_DBREQUEST="DB Request Error";
+	private final static String ERROR_INDEXOUTOFBOUND="Internal Error (Index Error)";
+	private final static String ERROR_INVALIDUSERID="Invalid User ID";
+	private final static String ERROR_INVALIDBOOKINGID="Invalid Booking ID";
+	private final static String ERROR_GENERAL="General Exception";
+	private final static String ERROR_DATECONVERSION="Date Conversion Error";
+	private final static String ERROR_INVALIDDATE="Invalid Date";
+	private final static String ERROR_INVALIDLOCATION="Invalid Location";
+
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/user/{userID}", method=RequestMethod.GET)
 	public ResponseEntity<?> userBookings(@PathVariable String userID){
 		try{
 			int userIdentification=Integer.parseInt(userID);
 			List<Booking> obj = BookingDAO.getAllBookingsForSpecificUser(userIdentification);
-			return (obj!=null)? ResponseEntity.ok(obj) : ResponseEntity.badRequest().body("Invalid User ID");
+			return (obj!=null)? ResponseEntity.ok(obj) : ResponseEntity.badRequest().body(ERROR_INVALIDUSERID);
 		}catch(SQLException sqlE){
-			return ResponseEntity.badRequest().body("DB Error");
+			return ResponseEntity.badRequest().body(ERROR_DBREQUEST);
 		}catch(IndexOutOfBoundsException indexE){
-			return ResponseEntity.badRequest().body("Internal Error (Index Error)");
+			return ResponseEntity.badRequest().body(ERROR_INDEXOUTOFBOUND);
+		}catch(NumberFormatException numE){
+			return ResponseEntity.badRequest().body(ERROR_INVALIDUSERID);
 		}catch(Exception e){
-			return ResponseEntity.badRequest().body("General Exception");
+			return ResponseEntity.badRequest().body(ERROR_GENERAL);
 		}
 	}
 
@@ -42,22 +55,22 @@ public class BookingController {
 			int userIdentification=Integer.parseInt(userID);
 			int bookingIdentification=Integer.parseInt(bookingID);
 			Booking obj = BookingDAO.getSingleBookingForSpecificUser(userIdentification, bookingIdentification);
-			return (obj!=null)? ResponseEntity.ok(obj) : ResponseEntity.badRequest().body("Invalid Location");
+			return (obj!=null)? ResponseEntity.ok(obj) : ResponseEntity.badRequest().body(ERROR_INVALIDLOCATION);
 			//Catch any exception (mysql, numconversion) threw by the method and output them into a bad request  
 		}catch(SQLException sqlE){
-			return ResponseEntity.badRequest().body("DB Error");
+			return ResponseEntity.badRequest().body(ERROR_DBREQUEST);
 		}catch(IndexOutOfBoundsException indexE){
-			return ResponseEntity.badRequest().body("Internal Error (Index Error)");
+			return ResponseEntity.badRequest().body(ERROR_INDEXOUTOFBOUND);
 		}catch(DateTimeParseException dateParserE){
-			return ResponseEntity.badRequest().body("Date Conversion Error");
+			return ResponseEntity.badRequest().body(ERROR_DATECONVERSION);
 		}catch(DateTimeException dateE){
-			return ResponseEntity.badRequest().body("The provided date has generated an error");
+			return ResponseEntity.badRequest().body(ERROR_INVALIDDATE);
 		}catch(NumberFormatException numE){
-			return ResponseEntity.badRequest().body("The booking ID or the User ID provided are incorrect");
+			return ResponseEntity.badRequest().body(ERROR_INVALIDBOOKINGID +" OR "+ ERROR_INVALIDUSERID);
 		}catch(Exception e){
-			return ResponseEntity.badRequest().body("General Exception");
+			return ResponseEntity.badRequest().body(ERROR_APPLICATION);
 		}
-		
+
 	}
 
 	/*@RequestMapping(value="/booking/checkAvailability", method=RequestMethod.GET)
@@ -86,18 +99,18 @@ public class BookingController {
 			@RequestParam(value="endDate") String endDate){
 		try {
 			List<BookingTable> obj=BookingDAO.getIndividualSeatsAvailabilityForLocationDateRange(location, startDate, endDate);
-			return (obj!=null && obj.size()>0)? ResponseEntity.ok(obj) : ResponseEntity.badRequest().body("Invalid Location");
-			
+			return (obj!=null && obj.size()>0)? ResponseEntity.ok(obj) : ResponseEntity.badRequest().body(ERROR_INVALIDLOCATION);
+
 			//Catch any exception (mysql, numconversion) threw by the method and output them into a bad request  
 		}catch(ParseException ex){
-			return ResponseEntity.badRequest().body("Error while finding the numbers of days between the given dates");
+			return ResponseEntity.badRequest().body(ERROR_APPLICATION);
 		}catch(SQLException  mysqlE){
-			return ResponseEntity.badRequest().body(mysqlE.getMessage());
+			return ResponseEntity.badRequest().body(ERROR_DBREQUEST);
 		}catch(Exception e){
-			return ResponseEntity.badRequest().body(e.toString());
+			return ResponseEntity.badRequest().body(ERROR_APPLICATION);
 		}
 	}
-	
+
 	@RequestMapping(value="/booking/bookingLength", method=RequestMethod.GET)
 	public ResponseEntity<?> retrieveBookingLength(
 			@RequestParam(value="startDate") String startDate, 
@@ -105,9 +118,9 @@ public class BookingController {
 		try{
 			int length=BookingDAO.getBookingLengthPublic(startDate, endDate);
 			//Verify the integer value retrieved
-			return (length>0)? ResponseEntity.ok(length) : ResponseEntity.badRequest().body("Invalid Dates");
+			return (length>0)? ResponseEntity.ok(length) : ResponseEntity.badRequest().body(ERROR_INVALIDDATE);
 		}catch(Exception e){
-			return ResponseEntity.badRequest().body("Application Error");
+			return ResponseEntity.badRequest().body(ERROR_APPLICATION);
 		}
 	}
 
