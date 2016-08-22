@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.time.DateTimeException;
 import java.time.format.DateTimeParseException;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,11 +14,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
+@CrossOrigin(origins = "*")
 @RestController
 public class BookingController {
 
-
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/user/{userID}", method=RequestMethod.GET)
 	public ResponseEntity<?> userBookings(@PathVariable String userID){
 		try{

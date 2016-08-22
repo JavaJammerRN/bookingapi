@@ -1,6 +1,5 @@
 package com.webservice;
 
-import java.sql.Array;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,10 +12,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.springframework.http.ResponseEntity;
-
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -293,7 +290,6 @@ public class BookingDAO {
 	}
 
 	private static List<java.sql.Date> getDatesInResultSet(ResultSet res, int deskID){
-		boolean result=false;
 		List<java.sql.Date> dates=new ArrayList();
 		try{
 			//Convert the resultSet into an arrayList
@@ -546,18 +542,6 @@ public class BookingDAO {
 	}
 
 	/*
-	 * This Method verify if an element is contained within an array and returns TRUE or FALSE
-	 */
-	private static boolean isElementInArray(int value, List<Integer>range){
-		//If the array is empty, it may be because the selected day is a SaturdaySunday or because all the seats are taken,
-		// in any case, the application 
-		if(range.isEmpty())
-			return true;
-		else
-			return range.contains((Integer)value);
-	}
-
-	/*
 	 * This method is used to calculate how many days the booking is for
 	 */
 	private static int getBookingLength(Date startDate, Date endDate){
@@ -613,6 +597,7 @@ public class BookingDAO {
 			//conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195GRV:3306/hotdesk_db?" +"user=hotdesk&password=hotdesk");
 			//Use for Red's DB
 			conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195G1Q:3306/hotdesk?" +"user=hotdesk&password=hotdesk");
+			//conn = (Connection) DriverManager.getConnection("jdbc:mysql://localhost/hotdesk?" +"user=root&password=");
 		} catch (Exception error) {
 			return null;
 		}
