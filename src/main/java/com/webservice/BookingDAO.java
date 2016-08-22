@@ -565,7 +565,9 @@ public class BookingDAO {
 			//Use for Michaels DB
 //			conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195GRV:3306/hotdesk_db?" +"user=hotdesk&password=hotdesk");
 			//Use for Reds DB
-			conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195G1Q:3306/hotdesk?" +"user=hotdesk&password=hotdesk");
+//			conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195G1Q:3306/hotdesk?" +"user=hotdesk&password=hotdesk");
+			//Use for Local DB
+			conn = (Connection) DriverManager.getConnection("jdbc:mysql://localhost/hotdesk?" +"user=root&password=");
 		} catch (Exception error) {
 			System.err.println("Could not establish a connection with the DataBase! "+error);
 		}
