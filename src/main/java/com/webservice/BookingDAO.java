@@ -29,6 +29,7 @@ public class BookingDAO {
 	private final static String ERROR_CONNECTIONDB="DB Connection Error";
 	private final static String ERROR_APPLICATION="Application Error";
 	private final static String ERROR_DBREQUEST="DB Request Error";
+	private final static String ERROR_INVALIDLOCATION="Invalid Location";
 
 	/*
 	 * This method returns all the bookings within the system
@@ -245,10 +246,10 @@ public class BookingDAO {
 				Connection connectionDB=BookingDAO.establishConnection();
 				Statement stmt = connectionDB.createStatement();
 				//Select query
-				String query= "SELECT * FROM `bookingdate` "
-						+ "LEFT JOIN booking INNER JOIN `desk` "
-						+ "ON booking.deskID_FK = desk.deskID "
-						+ "ON bookingdate.bookingID_FK=booking.bookingID "
+				String query= "SELECT booking.bookingID, userID, desk.deskID, deskBlock, deskLetter, location, date FROM booking "
+						+ "LEFT JOIN desk INNER JOIN bookingdate "
+						+ "ON desk.deskID=bookingdate.deskID "
+						+ "ON booking.bookingID=bookingdate.bookingID "
 						+ "WHERE date BETWEEN '"+startD+"' AND '"+endD+"'"
 						+ "AND location='"+loc+"'";
 				//Execute query and store the result
@@ -328,7 +329,6 @@ public class BookingDAO {
 	}*/
 
 
-
 	/*
 	 * This methods returns all the information for each seat on the location provided
 	 */
@@ -365,7 +365,7 @@ public class BookingDAO {
 			else{
 				return ResponseEntity.badRequest().body(ERROR_DBREQUEST);
 			}
-			return ResponseEntity.ok(allSeats);
+			return (allSeats.size()>0)? ResponseEntity.ok(allSeats) : ResponseEntity.badRequest().body(ERROR_INVALIDLOCATION);
 		}catch(SQLException  mysqlE){
 			return ResponseEntity.badRequest().body(ERROR_CONNECTIONDB);
 		}catch(Exception e){
