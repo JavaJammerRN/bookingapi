@@ -33,7 +33,7 @@ public class BookingDAO {
 	/*
 	 * This method returns all the bookings within the system
 	 */
-	public static List<Booking> getAllBookings(){
+	/*public static List<Booking> getAllBookings(){
 		Connection connectionDB=BookingDAO.establishConnection();
 		//Create and initialise an object that will store all the bookings within the system
 		List<Booking> allBookings=new ArrayList<Booking>();
@@ -41,7 +41,7 @@ public class BookingDAO {
 			try{
 				Statement stmt = connectionDB.createStatement();
 				//Select query
-				String query = "SELECT * FROM `booking` LEFT JOIN desk on booking.deskID_FK=desk.deskID";
+				String query = "SELECT * FROM `booking` LEFT JOIN desk on booking.deskID=desk.deskID";
 				//Execute the query
 				boolean status = stmt.execute(query);
 				if(status){
@@ -50,8 +50,8 @@ public class BookingDAO {
 					//Loop around the resultset to extract the data needed for each booking
 					while(rs.next()){
 						int bookingId=(Integer.parseInt(rs.getString("bookingID")));
-						int userId=(Integer.parseInt(rs.getString("userID_FK")));
-						int deskId=(Integer.parseInt(rs.getString("deskID_FK")));
+						int userId=(Integer.parseInt(rs.getString("userID")));
+						int deskId=(Integer.parseInt(rs.getString("deskID")));
 						int deskBlockN=(Integer.parseInt(rs.getString("deskBlock")));
 						String deskLetter=rs.getString("deskLetter");
 						String location=rs.getString("location");
@@ -69,7 +69,7 @@ public class BookingDAO {
 			}catch(Exception e){}
 		}
 		return null;
-	}
+	}*/
 
 	/*
 	 * This methods retrieves all the bookings linked to a specific userID.
@@ -85,7 +85,7 @@ public class BookingDAO {
 			try{
 				Statement stmt = connectionDB.createStatement();
 				//Select query
-				String query = "SELECT * FROM `booking` WHERE userID_FK='"+userId+"'";
+				String query = "SELECT * FROM `booking` WHERE userID='"+userId+"'";
 				//Execute the query
 				boolean status = stmt.execute(query);
 				if(status){
@@ -94,13 +94,12 @@ public class BookingDAO {
 					//Loop around the resultset to extract the data needed for each booking
 					while(rs.next()){
 						int bookingId=(Integer.parseInt(rs.getString("bookingID")));
-						//Add bookingID to the List, if not already inserted
-						if(!userBookingIDs.contains(bookingId))
-							userBookingIDs.add(bookingId);
+						//Add bookingID to the List
+						userBookingIDs.add(bookingId);
 					}
 					//Close the connection with the database
 					rs.close();
-
+					connectionDB.close();
 					//Now that all the bookings IDs have been found for a specific user, let's group them into single bookings with a start and end date
 					for(int i=0; i<userBookingIDs.size(); i++){
 						userBookings.add(getSingleBookingForSpecificUser(userId, userBookingIDs.get(i)));
@@ -125,72 +124,76 @@ public class BookingDAO {
 	public static Booking getSingleBookingForSpecificUser(int userId, int bookingId) throws Exception{
 		//Validate the data
 		if(userId>0 && bookingId>0){
-			//Create a temporary booking list
-			List<Booking> bookingList=new ArrayList<Booking>();
+			//Create a temporary booking object
+			Booking userBooking;
+			//This list of dates will be used later on to find the start and end date of the booking
+			List<java.sql.Date> datesBookingTemp=new ArrayList<java.sql.Date>();
 			//Create a connection with the database
 			Connection connectionDB=BookingDAO.establishConnection();
 			try{
 				Statement stmt = connectionDB.createStatement();
 				//Select query
-				String query = "SELECT * FROM `booking` "
-						+ "LEFT JOIN desk on booking.deskID_FK=desk.deskID "
-						+ "LEFT JOIN bookingdate on booking.bookingID=bookingdate.bookingID_FK "
-						+ "WHERE userID_FK='"+userId+"' AND bookingID='"+bookingId+"'";
+				String query = "SELECT booking.bookingID, userID, date, desk.deskID, deskBlock, deskLetter, location FROM `booking` "
+						+ "LEFT JOIN `bookingdate` on booking.bookingID=bookingdate.bookingID "
+						+ "LEFT JOIN `desk` on bookingdate.deskID=desk.deskID "
+						+ "WHERE userID='"+userId+"' AND booking.bookingID='"+bookingId+"'";
 				//Execute the query
 				boolean status = stmt.execute(query);
 				if(status){
 					//Extract the data from the resultset object
 					ResultSet rs = stmt.getResultSet();
-					//Create and instantiate the booking object that will be returned with all the information
-					Booking userBooking=new Booking();
-					java.sql.Date startDTemp=null;
-					java.sql.Date endDTemp=null;
-
+					//Initialise the booking object
+					userBooking=new Booking(bookingId, userId, "");
 					//Loop around the resultset to extract the data needed for each booking
 					while(rs.next()){
-						int deskId=(Integer.parseInt(rs.getString("deskID_FK")));
+						String location=rs.getString("location");
+						userBooking.setLocation(location);
+						int deskId=(Integer.parseInt(rs.getString("deskID")));
 						int deskBlockN=(Integer.parseInt(rs.getString("deskBlock")));
 						String deskLetter=rs.getString("deskLetter");
-						String location=rs.getString("location");
 						String date=rs.getString("date");
-						//Create a temporary booking object that will be added to the vector
-						Booking bookingTemp=new Booking(bookingId,userId,deskId,date,date,deskBlockN,deskLetter,location);
-						bookingList.add(bookingTemp);
+						//Add this date related to 1 day of the booking
+						SeatBooked seatTemp=new SeatBooked(deskId,deskBlockN,deskLetter,date);
+						//Add the date to the list of dates
+						datesBookingTemp.add(seatTemp.getDate());
+						//Add the seat reservation to the userBooking object
+						userBooking.addSeatBooked(seatTemp);
 					}
 					//Close the connection with the database
 					rs.close();
 					connectionDB.close();
-					//The Booking objects inside the bookingList are all the same apart from the date of the booking.
 					//The following code will find the first and last date for the given booking id, add them to the Booking object
 					//and return it to the user
+					//Only do this if the booking is longer than 1 day
+					//Create temporary start and end date;
+					java.sql.Date startDTemp=null, endDTemp=null;
+					if(datesBookingTemp.size()>1){
+						//Add 20 years to the current date
+						Calendar cal=Calendar.getInstance();
+						DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
+						Date date = new Date();
+						dateFormat.format(date);
+						cal.setTime(date);
+						//This specific line adds the 20 years to the current date
+						cal.add(Calendar.YEAR, 20);
+						//Convert the Date created to a SQL Date 
+						startDTemp=new java.sql.Date(cal.getTime().getTime());
 
-					//Create temporary start date;
-					//Add 20 years to the current date
-					Calendar cal=Calendar.getInstance();
-					DateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
-					Date date = new Date();
-					dateFormat.format(date);
-					cal.setTime(date);
-					//This specific line adds the 20 years to the current date
-					cal.add(Calendar.YEAR, 20);
-					//Convert the Date created to a SQL Date 
-					startDTemp=new java.sql.Date(cal.getTime().getTime());
-
-					//Loop that finds the start date of the booking
-					for(int i=0; i<bookingList.size(); i++){
-						//Copy the content of the first Booking object of the list inside the booking object that has to
-						//be returned
-						if(i==0)
-							userBooking=Booking.cloneBooking(bookingList.get(i));
-						if(bookingList.get(i).getStartDate().before(startDTemp))
-							startDTemp=bookingList.get(i).getStartDate();
-					}
-
-					//Loop that finds the end date of the booking
-					for(int i=0; i<bookingList.size(); i++){
-						if(bookingList.get(i).getEndDate().after(startDTemp)){
-							endDTemp=bookingList.get(i).getEndDate();
+						//Loop that finds the start date of the booking
+						for(int i=0; i<datesBookingTemp.size(); i++){
+							if(datesBookingTemp.get(i).before(startDTemp))
+								startDTemp=datesBookingTemp.get(i);
 						}
+						//Loop that finds the end date of the booking
+						for(int i=0; i<datesBookingTemp.size(); i++){
+							if(datesBookingTemp.get(i).after(startDTemp)){
+								endDTemp=datesBookingTemp.get(i);
+							}
+						}
+					}
+					else{
+						//Otherwise if the booking is for 1 day only, the start and end date match
+						startDTemp=endDTemp=datesBookingTemp.get(0);
 					}
 
 					//Now that the start and end date of the booking have been found,
@@ -579,7 +582,7 @@ public class BookingDAO {
 		}
 		return null;
 	}
-	
+
 	/*
 	 * This method extract the dates from the resultset passed as a parameter to match the results
 	 * to the deskID
@@ -608,9 +611,9 @@ public class BookingDAO {
 			// The newInstance() call is a work around for some broken Java implementations
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			//Use for Michael's DB
-			//conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195GRV:3306/hotdesk_db?" +"user=hotdesk&password=hotdesk");
+			conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195GRV:3306/hotdesk?" +"user=hotdesk&password=hotdesk");
 			//Use for Red's DB
-			conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195G1Q:3306/hotdesk?" +"user=hotdesk&password=hotdesk");
+			//conn = (Connection) DriverManager.getConnection("jdbc:mysql://UKL5CG6195G1Q:3306/hotdesk?" +"user=hotdesk&password=hotdesk");
 			//conn = (Connection) DriverManager.getConnection("jdbc:mysql://localhost/hotdesk?" +"user=root&password=");
 		} catch (Exception error) {
 			return null;
