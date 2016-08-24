@@ -1,38 +1,27 @@
 package com.webservice;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BookingTable {
 	private int deskID;
-	private List<java.sql.Date> dates;
+	private List<String> dates;
+
 	
-	public BookingTable(){
-	}
-	public BookingTable(int id, List<java.sql.Date> dates){
-		this.deskID=id;
-		this.dates=dates;
-	}
+	public BookingTable(){}
 	
-	public void setDeskId(int id){
+
+	
+	public void setDeskID(int id){
 		this.deskID=id;
 	}
-	public int getDeskId(){
+	public int getDeskID(){
 		return deskID;
 	}
-	public void setDates(List<java.sql.Date> dates){
+	public void setDates(List<String> dates){
 		this.dates=dates;
 	}
-	public void addDate(java.sql.Date date){
-		if(dates==null){
-			dates=new ArrayList<java.sql.Date>();
-		}
-		dates.add(date);
-	}
-	public List<java.sql.Date> getDates(){
+	public List<String> getDates(){
 		return dates;
 	}
-	public boolean datesValidity(){
-		return (dates!=null)? true:false;
-	}
+
 }
