@@ -274,7 +274,7 @@ public class BookingDAO {
 						java.sql.Date selectedDate=new java.sql.Date(cal.getTime().getTime());
 						//Make sure the selected date is not part of the weekend and is not contained within the list
 						if(dayOfTheWeek!=Calendar.SATURDAY && dayOfTheWeek!=Calendar.SUNDAY && !datesSeat.contains(selectedDate)){
-							temp.addDate(selectedDate);
+							temp.addDate(selectedDate.toString());
 						}
 						//Add a day to the current date
 						cal.add(Calendar.DATE,1);
