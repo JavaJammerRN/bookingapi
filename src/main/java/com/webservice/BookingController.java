@@ -7,11 +7,13 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -177,13 +179,19 @@ public class BookingController {
 		return BookingDAO.deleteBooking(bookingID);
 	}
 	
-	
+	// PUT - update map with all available seats
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value = "/gis", method = RequestMethod.PUT)
-	public @ResponseBody ResponseEntity<String> updateMap(@PathVariable int bookingID) {
-		return BookingDAO.deleteBooking(bookingID);
+	public @ResponseBody ResponseEntity<String> updateMap(@RequestBody GISWrapper desksAvailable) {
+		return BookingDAO.updateMap(desksAvailable);
 	}
 
+	// PUT - delete existing booking
+	@CrossOrigin(origins = "*")
+	@RequestMapping(value = "/gis/{deskSelected}", method = RequestMethod.PUT)
+	public @ResponseBody ResponseEntity<String> updateMapSelected(@PathVariable int deskSelected) {
+		return BookingDAO.updateMapSelected(deskSelected);
+	}
 
 
 		

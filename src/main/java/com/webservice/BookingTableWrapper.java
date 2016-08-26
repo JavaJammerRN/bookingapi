@@ -1,19 +1,18 @@
 package com.webservice;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class BookingTableWrapper {
 	
-	private List<BookingTable> bookingTables;
+	private ArrayList<BookingTable> bookingTables;
 	
 	public BookingTableWrapper() {}
 
-	public List<BookingTable> getBookingTables() {
+	public ArrayList<BookingTable> getBookingTables() {
 		return bookingTables;
 	}
 
-	public void setBookingTables(List<BookingTable> bookingTables) {
+	public void setBookingTables(ArrayList<BookingTable> bookingTables) {
 		this.bookingTables = bookingTables;
 	}
 

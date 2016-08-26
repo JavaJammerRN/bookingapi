@@ -65,6 +65,26 @@ public class Validate {
 		return new Validator(true,"");
 	}
 	
+	public static Validator validateUpdateMap(GISWrapper deskIDs){
+		Validator val = null;
+		
+		for(int ID : deskIDs.getDeskIDs()){
+			val = validateID(idType.DESK, ID);
+			if(!val.pass)
+				return val;
+		}
+		return new Validator(true,"");
+	}
+	
+	public static Validator validateUpdateMapSelected(int deskID){
+		Validator val = null;
+		val = validateID(idType.DESK, deskID);
+		if(!val.pass)
+			return val;
+
+		return new Validator(true,"");
+	}
+	
 	private static Validator validateBookingTableWrapper(int bookingID, BookingTableWrapper bookingTableWrapper){
 		Validator val = null;
 		HashMap<Integer, ArrayList<String>> bookingTableMap = new HashMap<>();
@@ -75,10 +95,12 @@ public class Validate {
 		
 		ArrayList<Integer> deskIDList = new ArrayList<>(bookingTableMap.keySet());
 		
-		
-		val = validateDesks(deskIDList);
-		if(!val.pass)
-			return val;
+		for(int ID : deskIDList){
+			validateID(idType.DESK, ID);
+			val = validateID(idType.DESK, ID);
+			if(!val.pass)
+				return val;
+			}
 		
 		val = validateDates(bookingID, bookingTableMap);
 		if(!val.pass)
@@ -144,24 +166,7 @@ public class Validate {
 		return new Validator(true,"");
 		
 	}
-	
-	private static Validator validateDesks(ArrayList<Integer> inputIDList){
-		
-		ArrayList<Integer> DBIDList = getIDList(idType.DESK);
-		
-		if(DBIDList == null){
-			return new Validator(false,"Something went wrong, please try again later.");
-		}
-		
-		for(int ID : inputIDList){
-			if(!DBIDList.contains(ID)){
-				return new Validator(false,"The Desk ID : " + ID +" does not exist.");
-			}
-		}
-		
-		return new Validator(true,"");
 
-	}
 	
 	private static ArrayList<Integer> getIDList(idType type){
 		ArrayList<Integer> dBIDList = new ArrayList<>();
