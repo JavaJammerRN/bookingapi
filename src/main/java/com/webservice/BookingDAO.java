@@ -535,6 +535,13 @@ public class BookingDAO {
 	}
 
 
+	//Method to manipulate GIS table
+	public static ResponseEntity<String> updateMap(List<Integer> tables) {
+
+		return null;
+
+	}
+
 	private static void insertBookingDates(Connection conn, PreparedStatement stmt, int generatedUserID, BookingTableWrapper bookingTableWrapper) throws SQLException, ParseException{
 		stmt = conn.prepareStatement("INSERT INTO bookingdate (bookingID, date, deskID) VALUES(?,?, ?)");
 		for(BookingTable bookingTable : bookingTableWrapper.getBookingTables()){

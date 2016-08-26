@@ -30,6 +30,11 @@ public class BookingController {
 	private final static String ERROR_INVALIDDATE="Invalid Date";
 	private final static String ERROR_INVALIDLOCATION="Invalid Location";
 
+	@RequestMapping(value="/test", method=RequestMethod.GET)
+	public ResponseEntity<?> test(){
+		return ResponseEntity.ok("BOOKING is working! :)");
+	}
+	
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/user/{userID}", method=RequestMethod.GET)
 	public ResponseEntity<?> userBookings(@PathVariable String userID){
@@ -169,6 +174,13 @@ public class BookingController {
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value = "/booking/{bookingID}", method = RequestMethod.DELETE)
 	public @ResponseBody ResponseEntity<String> deleteBooking(@PathVariable int bookingID) {
+		return BookingDAO.deleteBooking(bookingID);
+	}
+	
+	
+	@CrossOrigin(origins = "*")
+	@RequestMapping(value = "/gis", method = RequestMethod.PUT)
+	public @ResponseBody ResponseEntity<String> updateMap(@PathVariable int bookingID) {
 		return BookingDAO.deleteBooking(bookingID);
 	}
 
