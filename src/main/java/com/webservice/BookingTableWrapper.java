@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BookingTableWrapper {
-
+	
 	private List<BookingTable> bookingTables;
 	
 	public BookingTableWrapper() {}

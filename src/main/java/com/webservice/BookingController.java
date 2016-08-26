@@ -48,6 +48,7 @@ public class BookingController {
 		}
 	}
 
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/{userID}/ref/{bookingID}", method=RequestMethod.GET)
 	public ResponseEntity<?> userSpecificBooking(
 			@PathVariable("userID") String userID, 
@@ -93,6 +94,7 @@ public class BookingController {
 		}
 	}*/
 
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/checkSingleAvailability", method=RequestMethod.GET)
 	public ResponseEntity<?> retrieveSingleSeatsAvailableOnPeriodOfTime(
 			@RequestParam(value="location") String location, 
@@ -112,6 +114,7 @@ public class BookingController {
 		}
 	}
 
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/bookingLength", method=RequestMethod.GET)
 	public ResponseEntity<?> retrieveBookingLength(
 			@RequestParam(value="startDate") String startDate, 
@@ -125,6 +128,7 @@ public class BookingController {
 		}
 	}
 
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/seatsLocation", method=RequestMethod.GET)
 	public ResponseEntity<?> retrieveAllSeatsLocation(
 			@RequestParam(value="location") String location){
@@ -135,6 +139,7 @@ public class BookingController {
 		}
 	}
 
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/seatInfo", method=RequestMethod.GET)
 	public ResponseEntity<?> retrieveSeatData(
 			@RequestParam(value="deskId") String deskId){
@@ -148,18 +153,16 @@ public class BookingController {
 
 	// POST - create new booking
 	@CrossOrigin(origins = "*")
-	@RequestMapping(value = "/booking", method = RequestMethod.POST)
-	public @ResponseBody ResponseEntity<String> createBooking(@RequestParam int userID, @RequestParam int deskID,
-			@RequestParam String startDate, @RequestParam String endDate) throws SQLException, ParseException {
-		return BookingDAO.createBooking(userID, deskID, startDate, endDate);
+	@RequestMapping(value = "/booking/{userID}", method = RequestMethod.POST)
+	public @ResponseBody ResponseEntity<String> test(@PathVariable int userID, @RequestBody BookingTableWrapper bookingTableWrapper) throws SQLException, ParseException {
+		return BookingDAO.createBooking(userID, bookingTableWrapper);
 	}
 
 	// PUT - update existing booking
 	@CrossOrigin(origins = "*")
-	@RequestMapping(value = "/booking/{bookingID}", method = RequestMethod.PUT)
-	public @ResponseBody ResponseEntity<String> updateBooking(@PathVariable int bookingID,
-			@RequestParam String newStartDate, @RequestParam String newEndDate) throws SQLException, ParseException {
-		return BookingDAO.updateBooking(bookingID, newStartDate, newEndDate);
+	@RequestMapping(value = "/user/{userID}/booking/{bookingID}", method = RequestMethod.PUT)
+	public @ResponseBody ResponseEntity<String> updateBooking(@PathVariable int userID, @PathVariable int bookingID, @RequestBody BookingTableWrapper bookingTableWrapper) throws SQLException, ParseException {
+		return BookingDAO.updateBooking(userID, bookingID, bookingTableWrapper);
 	}
 
 	// DELETE - delete existing booking
@@ -169,16 +172,8 @@ public class BookingController {
 		return BookingDAO.deleteBooking(bookingID);
 	}
 
-	@CrossOrigin(origins = "*")
-	@RequestMapping(value = "/test", method = RequestMethod.POST)
-	public @ResponseBody ResponseEntity<String> test(@RequestBody BookingTableWrapper bookingTableWrapper) {
-		
-		String str = "";
-		for(BookingTable bt : bookingTableWrapper.getBookingTables()){
-			str += "ID: " + bt.getDeskID() + " | " + bt.getDates().toString();
-		}
-		return ResponseEntity.ok(str); 
-	}
+
+
 		
 
 

@@ -454,8 +454,8 @@ public class BookingDAO {
 
 
 	//Method to create booking for a specified user
-	public static ResponseEntity<String> createBooking(int userID, int deskID, String inputStartDate, String inputEndDate) throws SQLException, ParseException{
-		Validator val = Validate.validateCreateBooking(userID, deskID, inputStartDate, inputEndDate);
+	public static ResponseEntity<String> createBooking(int userID, BookingTableWrapper bookingTableWrapper) throws SQLException, ParseException{
+		Validator val = Validate.validateCreateBooking(userID, bookingTableWrapper);
 		if(!val.pass){
 			return ResponseEntity.badRequest().body(val.message);
 		}
@@ -465,9 +465,8 @@ public class BookingDAO {
 			conn.setAutoCommit(false);
 
 			//Insert into booking table, return auto generated ID
-			PreparedStatement stmt = conn.prepareStatement("INSERT INTO booking (userID_FK, deskID_FK) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO booking (userID) VALUES(?)", Statement.RETURN_GENERATED_KEYS);
 			stmt.setInt(1, userID);
-			stmt.setInt(2, deskID);
 			stmt.execute();
 
 			//get auto generated ID for bookingdate table
@@ -479,7 +478,7 @@ public class BookingDAO {
 			}
 
 			//Insert booking dates records and commit
-			insertBookingDates(conn, stmt, generatedUserID, inputStartDate, inputEndDate);
+			insertBookingDates(conn, stmt, generatedUserID, bookingTableWrapper);
 			conn.commit();
 			return ResponseEntity.ok("Booking has been created");
 		} catch(SQLException SQLe) {
@@ -487,10 +486,11 @@ public class BookingDAO {
 		}
 
 	}
+	
 
 	//Method to update booking for a specified user
-	public static ResponseEntity<String> updateBooking(int bookingID, String newStartDate, String newEndDate) throws SQLException, ParseException{
-		Validator val = Validate.validateUpdateBooking(bookingID, newStartDate, newEndDate);
+	public static ResponseEntity<String> updateBooking(int userID, int bookingID, BookingTableWrapper bookingTableWrapper) throws SQLException, ParseException{
+		Validator val = Validate.validateUpdateBooking(userID, bookingID, bookingTableWrapper);
 		if(!val.pass){
 			return ResponseEntity.badRequest().body(val.message);
 		}
@@ -499,12 +499,12 @@ public class BookingDAO {
 			Connection conn = BookingDAO.establishConnection();
 			conn.setAutoCommit(false);
 
-			PreparedStatement stmt = conn.prepareStatement("DELETE FROM bookingdate WHERE bookingID_FK = ?");
+			PreparedStatement stmt = conn.prepareStatement("DELETE FROM bookingdate WHERE bookingID = ?");
 			stmt.setInt(1, bookingID);
 			stmt.executeUpdate();
 
 			//Insert booking dates records an commit
-			insertBookingDates(conn, stmt, bookingID, newStartDate, newEndDate);
+			insertBookingDates(conn, stmt, bookingID, bookingTableWrapper);
 			conn.commit();
 			return ResponseEntity.ok("Booking: " + bookingID + " has been updated.");
 		}catch(SQLException SQLe){
@@ -535,14 +535,16 @@ public class BookingDAO {
 	}
 
 
-	private static void insertBookingDates(Connection conn, PreparedStatement stmt, int generatedUserID, String inputStartDate, String inputEndDate) throws SQLException, ParseException{
-		stmt = conn.prepareStatement("INSERT INTO bookingdate (bookingID_FK, date) VALUES(?,?)");
-		LocalDate startDate = LocalDate.parse(inputStartDate);
-		LocalDate endDate = LocalDate.parse(inputEndDate);
-		for(LocalDate ld = startDate; ld.isBefore(endDate.plusDays(1)); ld = ld.plusDays(1)){
-			stmt.setInt(1, generatedUserID);
-			stmt.setDate(2, stringToSQLDate(ld.toString()));
-			stmt.addBatch();
+	private static void insertBookingDates(Connection conn, PreparedStatement stmt, int generatedUserID, BookingTableWrapper bookingTableWrapper) throws SQLException, ParseException{
+		stmt = conn.prepareStatement("INSERT INTO bookingdate (bookingID, date, deskID) VALUES(?,?, ?)");
+		for(BookingTable bookingTable : bookingTableWrapper.getBookingTables()){
+			for(String date : bookingTable.getDates()){
+				stmt.setInt(1, generatedUserID);
+				stmt.setDate(2, stringToSQLDate(date));
+				stmt.setInt(3, bookingTable.getDeskID());
+				stmt.addBatch();
+			}
+			
 		}
 		stmt.executeBatch();
 	}
