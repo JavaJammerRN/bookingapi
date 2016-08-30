@@ -338,7 +338,7 @@ public class BookingDAO {
 							+ "ON booking.bookingID=bookingdate.bookingID "
 							+ "WHERE date BETWEEN '"+startD+"' AND '"+endD+"'"
 							+ "AND location='"+loc+"'"
-							+ "AND booking.bookingID='"+bookingID+"'";
+							+ "AND booking.bookingID!='"+bookingID+"'";
 				}
 				//Execute query and store the result
 				stmt.execute(query);
