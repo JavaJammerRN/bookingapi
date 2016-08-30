@@ -323,6 +323,7 @@ public class BookingDAO {
 				Statement stmt = connectionDB.createStatement();
 				//Select query
 				String query="";
+				if(bookingID==-1){
 					query= "SELECT booking.bookingID, userID, desk.deskID, deskBlock, deskLetter, location, date FROM booking "
 							+ "LEFT JOIN desk INNER JOIN bookingdate "
 							+ "ON desk.deskID=bookingdate.deskID "
