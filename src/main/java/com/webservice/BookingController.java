@@ -161,7 +161,7 @@ public class BookingController {
 	// POST - create new booking
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value = "/booking/{userID}", method = RequestMethod.POST)
-	public @ResponseBody ResponseEntity<String> test(@PathVariable int userID, @RequestBody BookingTableWrapper bookingTableWrapper) throws SQLException, ParseException {
+	public @ResponseBody ResponseEntity<String> createBooking(@PathVariable int userID, @RequestBody BookingTableWrapper bookingTableWrapper) throws SQLException, ParseException {
 		return BookingDAO.createBooking(userID, bookingTableWrapper);
 	}
 
