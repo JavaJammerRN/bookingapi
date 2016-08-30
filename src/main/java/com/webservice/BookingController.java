@@ -38,6 +38,12 @@ public class BookingController {
 	}
 	
 	@CrossOrigin(origins = "*")
+	@RequestMapping(value="/userLogin/{userName}", method = RequestMethod.GET)
+	  public User users(@PathVariable String userName) {
+		return UserDAO.getUserDataByUsername(userName);
+    }
+	
+	@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/user/{userID}", method=RequestMethod.GET)
 	public ResponseEntity<?> userBookings(@PathVariable String userID){
 		try{
@@ -106,9 +112,10 @@ public class BookingController {
 	public ResponseEntity<?> retrieveSingleSeatsAvailableOnPeriodOfTime(
 			@RequestParam(value="location") String location, 
 			@RequestParam(value="startDate") String startDate, 
-			@RequestParam(value="endDate") String endDate){
+			@RequestParam(value="endDate") String endDate,
+			@RequestParam(value="bookingId") int bID){
 		try {
-			List<BookingTable> obj=BookingDAO.getIndividualSeatsAvailabilityForLocationDateRange(location, startDate, endDate);
+			List<BookingTable> obj=BookingDAO.getIndividualSeatsAvailabilityForLocationDateRange(location, startDate, endDate, bID);
 			return (obj!=null && obj.size()>0)? ResponseEntity.ok(obj) : ResponseEntity.badRequest().body(ERROR_INVALIDLOCATION);
 
 			//Catch any exception (mysql, numconversion) threw by the method and output them into a bad request  
@@ -121,7 +128,7 @@ public class BookingController {
 		}
 	}
 
-	@CrossOrigin(origins = "*")
+	/*@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/bookingLength", method=RequestMethod.GET)
 	public ResponseEntity<?> retrieveBookingLength(
 			@RequestParam(value="startDate") String startDate, 
@@ -133,7 +140,7 @@ public class BookingController {
 		}catch(Exception e){
 			return ResponseEntity.badRequest().body(ERROR_APPLICATION);
 		}
-	}
+	}*/
 
 	@CrossOrigin(origins = "*")
 	@RequestMapping(value="/booking/seatsLocation", method=RequestMethod.GET)
