@@ -174,7 +174,7 @@ public class BookingController {
 
 	// PUT - update existing booking
 	@CrossOrigin(origins = "*")
-	@RequestMapping(value = "/user/{userID}/booking/{bookingID}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/booking/{bookingID}/user/{userID}", method = RequestMethod.PUT)
 	public @ResponseBody ResponseEntity<String> updateBooking(@PathVariable int userID, @PathVariable int bookingID, @RequestBody BookingTableWrapper bookingTableWrapper) throws SQLException, ParseException {
 		return BookingDAO.updateBooking(userID, bookingID, bookingTableWrapper);
 	}
